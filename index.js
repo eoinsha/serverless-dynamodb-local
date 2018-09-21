@@ -228,7 +228,7 @@ class ServerlessDynamodbLocal {
     return Promise.resolve()
       .then(() => dynamodb.raw.listTables({}).promise())
       .then(({ TableNames }) => {
-        const removals = tables.reduce((prev, TableName) => {
+        const removals = tables.reduce((prev, { TableName }) => {
           if (TableNames.includes(TableName)) {
             prev.push(dynamodb.raw.deleteTable({ TableName }).promise());
           }
