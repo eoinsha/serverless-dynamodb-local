@@ -225,13 +225,19 @@ class ServerlessDynamodbLocal {
     const dynamodb = this.dynamodbOptions();
     const tables = this.tables;
 
-    return Promise.all(
-      tables.map(table => {
-        const { TableName } = table;
+    return Promise.resolve()
+      .then(() => dynamodb.raw.listTables({}).promise())
+      .then(({ TableNames }) => {
+        const removals = tables.reduce((prev, TableName) => {
+          if (TableNames.includes(tableName)) {
+            prev.push(dynamodb.raw.deleteTable({ TableName }).promise());
+          }
 
-        return dynamodb.raw.deleteTable({ TableName }).promise();
-      })
-    );
+          return prev;
+        }, []);
+
+        return Promise.all(removals);
+      });
   }
 
   installHandler() {
